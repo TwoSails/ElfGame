@@ -1,27 +1,8 @@
-"""
-Program: Elf Game
-Description: a probability based game about elves
-Author: TwoSails
-Version: 1.3.0
-"""
-
 import random
-import colours as color
-import config
 
-version = config.version
+version = "1.0.0"
 
 print("------ Elf Game ------")
-
-messageOne = 'All the elves sent out died in a horrific gang related incident with goblins. the elves at home are ' \
-             'safe and unharmed, no money is made '
-messageTwo = 'The elves at home all suffer from food poisoning and vomit to death, ' + color.BRIGHT_GREEN + 'however ' \
-                                                                                                     'the elves that were' \
-                                                                                                     ' sent out all ' \
-                                                                                                     'return home ' \
-                                                                                                     'safely with £10 '
-messageThree = 'The elves at home are all safe and the elves at work come back with $10 each'
-messageFour = 'The elves at home are all safe and the elves at work come back with $20 each'
 
 
 class Elf:
@@ -39,9 +20,7 @@ class Elf:
         self.elvesLost = 0
 
     def beforeRoll(self):
-        sentOut = 0
-        print("Total Elves:" + str(color.GREEN), self.totalElves, color.WHITE)
-        print("Total Money:" + str(color.GREEN) + " $" + str(self.money), color.WHITE)
+        print("Total Elves:", self.totalElves)
         while self.carryOn:
             try:
                 sentOut = int(input('Elves sent out: '))
@@ -50,9 +29,9 @@ class Elf:
                 else:
                     self.carryOn = False
             except ValueError:
-                print(color.BRIGHT_RED + "ValueError - Invalid Input", color.WHITE)
+                print("ValueError - Invalid Input")
         atHome = self.totalElves - sentOut
-        print(color.GREEN + str(sentOut), color.WHITE + "elves sent out and" + color.GREEN, atHome, color.WHITE + "elves at home")
+        print(sentOut, "elves sent out and", atHome, "elves at home")
         self.atHome = atHome
         self.sentOut = sentOut
 
@@ -60,60 +39,55 @@ class Elf:
         return sentOut
 
     def rollDice(self, sent):
-        moneyNone = "pardon"
         self.sentOut = sent
         money = self.money
         self.roll = random.randint(1, 6)
         self.rolls.append(self.roll)
-        print("The dice roll was:" + str(color.GREEN), self.roll, color.WHITE)
+        print("The dice roll was:", self.roll)
         if self.roll == 1 or self.roll == 2:
             self.elvesLost += self.sentOut
             self.sentOut = self.sentOut - self.sentOut
-            print(color.RED + messageOne + color.WHITE)
+            print('All the elves sent out died in a horrific gang related incident with goblins. the elves at home '
+                  'are safe and unharmed, no money is made')
 
         elif self.roll == 3:
             self.elvesLost += self.atHome
             self.atHome = 0
-            print(color.RED + str(messageTwo), color.WHITE)
+            print('The elves at home all suffer from food poisoning and vomit to death, however the elves that were '
+                  'sent out all return home safely with £10')
             money = (self.sentOut * 10) + money
 
         elif self.roll == 4 or self.roll == 5:
-            print(color.BRIGHT_GREEN + messageThree + color.WHITE)
+            print('The elves at home are all safe and the elves at work come back with £10 each')
             money = (self.sentOut * 10) + money
 
         elif self.roll == 6:
-            print(color.BRIGHT_GREEN + messageFour + color.WHITE)
+            print('The elves at home are all safe and the elves at work come back with £20 each')
             money = (self.sentOut * 20) + money
 
         self.totalElves = self.sentOut + self.atHome
 
-        print('Total money is', color.GREEN + '$' + str(money) + color.WHITE)
-        print('Total elves:' + str(color.GREEN), self.totalElves, color.WHITE)
+        print('Total money is $' + str(money))
+        print('Total elves:', self.totalElves)
         self.money = money
-        if self.totalElves == 0 and self.money == 0:
-            moneyNone = "ah"
-
-        return moneyNone
 
     def shop(self):
-        buyElves = 0
         carryOn = self.carryOn
-        if self.money > 0:
-            while carryOn:
-                try:
-                    buyElves = int(input('How many elves would you like to buy (Elves cost $10 each)? '))
-                    if int(buyElves) * 10 > self.money:
-                        print(color.RED + 'You do not have enough money' + color.WHITE)
-                    else:
-                        carryOn = False
-                        self.elvesTotal += int(buyElves)
-                except ValueError:
-                    print(color.BRIGHT_RED + 'Invalid Input' + color.WHITE)
+        while carryOn:
+            try:
+                buyElves: int = int(input('How many elves would you like to buy? '))
+                if buyElves * 10 > self.money:
+                    print('You do not have enough money')
+                else:
+                    carryOn = False
+                    self.elvesTotal == buyElves
+            except ValueError:
+                print('Invalid Input')
 
-            moneySpent = int(buyElves) * 10
-            self.money = self.money - moneySpent
+        moneySpent = buyElves * 10
+        self.money = self.money - moneySpent
 
-            self.totalElves = self.totalElves + buyElves
+        self.totalElves = self.totalElves + buyElves
         print(self.totalElves)
         print(self.money)
         self.carryOn = True
@@ -123,17 +97,17 @@ class Elf:
         if self.totalElves != 0:
             while self.carryOn:
                 question = input(
-                    "Would you like to sell the your remaining, " + elves + ", elves on elf-bay? [Y/N] ").lower()
+                    "Would you like to sell the your remaining, " + elves + ", elves on elf-bay? [Y/N]").lower()
                 try:
                     if question == "y":
                         self.money = self.money + (self.totalElves * 5)
-                        print("You have sold" + color.GREEN, self.totalElves, color.WHITE + "elves for", self.totalElves * 5)
+                        print("You have sold", self.totalElves, "elves for", self.totalElves * 5)
                         self.totalElves = 0
                     elif question == "n":
-                        print('You still have' + color.GREEN, self.totalElves,  str(color.WHITE))
+                        print('You still have', self.totalElves)
                     self.carryOn = False
                 except SyntaxError:
-                    print(color.BRIGHT_RED + "I really don't now what has gone on..." + color.WHITE)
+                    print("I really don't now what has gone on...")
 
         self.carryOn = True
 
@@ -145,26 +119,20 @@ class Elf:
         print('Total elves gained:', self.elvesTotal)
         print('Total elves lost:', self.elvesLost)
 
-    def data(self, ver, name):
+    def data(self, ver):
         with open('elfGameData.txt', 'a') as file:
-            data = ver + ", " + name + ", " + str(self.rolls) + ", " + str(self.money) + ", " + str(self.totalElves) + "\n"
+            data = ver + ", " + str(self.rolls) + ", " + str(self.money) + ", " + str(self.totalElves) + "\n"
             file.write(data)
 
 
 elf = Elf()
 
-username = input("Enter your name: ")
-
 for x in range(10):
     print('\nRound', x + 1,  "out of 10")
     out = elf.beforeRoll()
-    noMoney = elf.rollDice(out)
-    if noMoney == "ah":
-        print('You have gone broke!')
-        break
-    if x != 9:
-        elf.shop()
+    elf.rollDice(out)
+    elf.shop()
 
 elf.eShop()
 elf.scores()
-elf.data(version, username)
+elf.data(version)
