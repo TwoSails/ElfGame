@@ -1,8 +1,15 @@
+"""
+Program: Elf Game
+Description: a probability based game about elves
+Author: TwoSails
+Version: 1.3.0
+"""
+
 import random
 import colours as color
-from time import sleep
+import config
 
-version = "1.2.0"
+version = config.version
 
 print("------ Elf Game ------")
 
@@ -32,6 +39,7 @@ class Elf:
         self.elvesLost = 0
 
     def beforeRoll(self):
+        sentOut = 0
         print("Total Elves:" + str(color.GREEN), self.totalElves, color.WHITE)
         print("Total Money:" + str(color.GREEN) + " $" + str(self.money), color.WHITE)
         while self.carryOn:
@@ -52,6 +60,7 @@ class Elf:
         return sentOut
 
     def rollDice(self, sent):
+        moneyNone = "pardon"
         self.sentOut = sent
         money = self.money
         self.roll = random.randint(1, 6)
@@ -81,8 +90,13 @@ class Elf:
         print('Total money is', color.GREEN + '$' + str(money) + color.WHITE)
         print('Total elves:' + str(color.GREEN), self.totalElves, color.WHITE)
         self.money = money
+        if self.totalElves == 0 and self.money == 0:
+            moneyNone = "ah"
 
-    def shop(self, i):
+        return moneyNone
+
+    def shop(self):
+        buyElves = 0
         carryOn = self.carryOn
         if self.money > 0:
             while carryOn:
@@ -109,14 +123,14 @@ class Elf:
         if self.totalElves != 0:
             while self.carryOn:
                 question = input(
-                    "Would you like to sell the your remaining, " + elves + ", elves on elf-bay? [Y/N]").lower()
+                    "Would you like to sell the your remaining, " + elves + ", elves on elf-bay? [Y/N] ").lower()
                 try:
                     if question == "y":
                         self.money = self.money + (self.totalElves * 5)
                         print("You have sold" + color.GREEN, self.totalElves, color.WHITE + "elves for", self.totalElves * 5)
                         self.totalElves = 0
                     elif question == "n":
-                        print('You still have' + color.GREEN, self.totalElves + color.WHITE)
+                        print('You still have' + color.GREEN, self.totalElves,  str(color.WHITE))
                     self.carryOn = False
                 except SyntaxError:
                     print(color.BRIGHT_RED + "I really don't now what has gone on..." + color.WHITE)
@@ -137,7 +151,6 @@ class Elf:
             file.write(data)
 
 
-
 elf = Elf()
 
 username = input("Enter your name: ")
@@ -145,14 +158,13 @@ username = input("Enter your name: ")
 for x in range(10):
     print('\nRound', x + 1,  "out of 10")
     out = elf.beforeRoll()
-    elf.rollDice(out)
+    noMoney = elf.rollDice(out)
+    if noMoney == "ah":
+        print('You have gone broke!')
+        break
     if x != 9:
-        elf.shop(x)
+        elf.shop()
 
 elf.eShop()
 elf.scores()
 elf.data(version, username)
-
-for x in range(7):
-    sleep(10)
-    print("\n")
