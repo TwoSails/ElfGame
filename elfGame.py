@@ -171,7 +171,6 @@ class Elf:
 
 def leaderBoard():
     with open('elfGameData.txt', 'r') as file:
-        row = 1
         fileLine = file.readline()
 
         while fileLine != "":
