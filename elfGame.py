@@ -37,6 +37,7 @@ class Elf:
         self.rolls = []
         self.elvesTotal = 0
         self.elvesLost = 0
+        self.value = 100
 
     def beforeRoll(self):
         sentOut = 0
@@ -60,6 +61,7 @@ class Elf:
         return sentOut
 
     def rollDice(self, sent):
+        moneyNone = "pardon"
         self.sentOut = sent
         money = self.money
         self.roll = random.randint(1, 6)
@@ -70,25 +72,41 @@ class Elf:
             self.sentOut = self.sentOut - self.sentOut
             print(color.RED + messageOne + color.WHITE)
 
+            # Elf Values
+            self.value = self.value + (self.atHome * config.valueHomeSafe) - (self.sentOut * config.valueSentOut)
+
         elif self.roll == 3:
             self.elvesLost += self.atHome
             self.atHome = 0
             print(color.RED + str(messageTwo), color.WHITE)
             money = (self.sentOut * 10) + money
 
+            # Elf Values
+            self.value = self.value + (self.sentOut * config.valueBackSafe) - (self.sentOut * config.valueAtHome)
+
         elif self.roll == 4 or self.roll == 5:
             print(color.BRIGHT_GREEN + messageThree + color.WHITE)
             money = (self.sentOut * 10) + money
 
+            # Elf Values
+            self.value = self.value + (self.sentOut * config.valueBackSafe) + (self.atHome * config.valueHomeSafe)
+
         elif self.roll == 6:
             print(color.BRIGHT_GREEN + messageFour + color.WHITE)
             money = (self.sentOut * 20) + money
+
+            # Elf Values
+            self.value = self.value + (self.sentOut * config.valueBackSafe) + (self.atHome * config.valueHomeSafe)
 
         self.totalElves = self.sentOut + self.atHome
 
         print('Total money is', color.GREEN + '$' + str(money) + color.WHITE)
         print('Total elves:' + str(color.GREEN), self.totalElves, color.WHITE)
         self.money = money
+        if self.totalElves == 0 and self.money == 0:
+            moneyNone = "ah"
+
+        return moneyNone
 
     def shop(self):
         buyElves = 0
@@ -121,8 +139,12 @@ class Elf:
                     "Would you like to sell the your remaining, " + elves + ", elves on elf-bay? [Y/N] ").lower()
                 try:
                     if question == "y":
-                        self.money = self.money + (self.totalElves * 5)
-                        print("You have sold" + color.GREEN, self.totalElves, color.WHITE + "elves for", self.totalElves * 5)
+                        # Elf Value
+                        self.value = self.value / 100
+                        print(self.value)
+
+                        self.money = self.money + (self.totalElves * (5 * self.value))
+                        print("You have sold" + color.GREEN, self.totalElves, color.WHITE + "elves for", self.totalElves * (5 * self.value))
                         self.totalElves = 0
                     elif question == "n":
                         print('You still have' + color.GREEN, self.totalElves, color.WHITE)
@@ -142,9 +164,30 @@ class Elf:
 
     def data(self, ver, name):
         with open('elfGameData.txt', 'a') as file:
-            data = ver + ", " + name + ", " + str(self.rolls) + ", " + str(self.money) + ", " + str(self.totalElves) + "\n"
+            rolls = str(self.rolls).replace(', ', " ")
+            data = ver + ", " + name + ", " + str(rolls) + ", " + str(self.money) + ", " + str(self.totalElves) + "\n"
             file.write(data)
 
+
+def leaderBoard():
+    with open('elfGameData.txt', 'r') as file:
+        row = 1
+        fileLine = file.readline()
+
+        while fileLine != "":
+            field = fileLine.split(",")
+            versionData = field[0]
+            usernameData = field[1]
+            rollsData = field[2]
+            moneyData = field[3]
+            elvesData = field[4]
+
+            fileLine = file.readline()
+            print(versionData, usernameData, rollsData, moneyData, elvesData)
+    print(leaderList)
+
+
+leaderBoard()
 
 elf = Elf()
 
@@ -153,10 +196,15 @@ username = input("Enter your name: ")
 for x in range(10):
     print('\nRound', x + 1,  "out of 10")
     out = elf.beforeRoll()
-    elf.rollDice(out)
+    noMoney = elf.rollDice(out)
+    if noMoney == "ah":
+        print(config.listNoMoney[random.randint(0, 2)])
+        break
     if x != 9:
         elf.shop()
 
 elf.eShop()
 elf.scores()
 elf.data(version, username)
+
+leaderBoard()
